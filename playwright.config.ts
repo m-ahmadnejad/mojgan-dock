@@ -11,10 +11,14 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: [
+  /*reporter: [
     ['list'],
     ['junit', { outputFile: 'reports-e2e/junit.xml' }],
     ['html', { outputFolder: 'reports-e2e/html', open: 'never' }],
+  ],*/
+    reporter: [
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['junit', { outputFile: 'test-results/junit.xml' }],
   ],
   use: {
     baseURL,
