@@ -68,6 +68,12 @@ pipeline {
       steps {
         echo 'E2E disabled (Integration already runs Playwright tests)'
       }
+      post{
+        always{
+         publishHTML([allowMissing:false,alwaysLinkToLastBuild:true,icon:'',keppAll:false,reportDir:'reports-e2e/html/',reportFiles:'index.html',reportName:'Playwright HTML Report',reportTitle:'',userWrapperFileDirectly:true])   
+         junit stdioRetention:'ALL',testResult:'reports-e2e/junit.xml'
+        }
+      }
     }
   }
 }
