@@ -1,6 +1,5 @@
 pipeline {
   agent any
-
   options { ansiColor('xterm') }
 
   stages {
@@ -9,9 +8,7 @@ pipeline {
     }
 
     stage('Build') {
-      agent {
-        docker { image 'node:20-alpine' }
-      }
+      agent { docker { image 'node:20-alpine' } }
       steps {
         sh 'node -v'
         sh 'npm -v'
@@ -20,21 +17,23 @@ pipeline {
     }
 
     stage('Unit Tests') {
-      agent {
-        docker { image 'node:20-alpine' }
-      }
+      agent { docker { image 'node:20-alpine' } }
       steps {
         sh 'npm ci'
         sh 'npm run test:unit'
       }
+    }
 
-      stage('integration tests'){
-        agent{
-            docker{
-                image 'mrc.microsoft.com/playwright:v1.54.2-jammy'
-                reuseNode true
-            }
+    stage('Integration Tests') {
+      agent {
+        docker {
+          image 'mcr.microsoft.com/playwright:v1.54.2-jammy'
+          reuseNode true
         }
+      }
+      steps {
+        sh 'npm ci'
+        sh 'npx playwright test'
       }
     }
 
