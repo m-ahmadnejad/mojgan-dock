@@ -54,6 +54,16 @@ pipeline {
 
     // ❗ فعلاً غیر فعال تا تست‌ها دوبار اجرا نشن
     stage('E2E Playwright') {
+                  agent {
+            docker {
+              image 'mcr.microsoft.com/playwright:v1.54.2-jammy'
+              reuseNode true
+            }
+                  }
+                  environment{
+                    E2E_BASE_URL='https://spanish-cards.netlify.app/'
+                  }
+            
       when { expression { false } }
       steps {
         echo 'E2E disabled (Integration already runs Playwright tests)'
