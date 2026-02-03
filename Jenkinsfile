@@ -1,15 +1,11 @@
 pipeline {
   agent any
 
-  options {
-    ansiColor('xterm')
-  }
+  options { ansiColor('xterm') }
 
   stages {
     stage('Checkout') {
-      steps {
-        checkout scm
-      }
+      steps { checkout scm }
     }
 
     stage('E2E Playwright') {
@@ -27,7 +23,6 @@ pipeline {
       post {
         always {
           archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
-          junit testResults: 'test-results/**/*.xml', allowEmptyResults: true
         }
       }
     }
