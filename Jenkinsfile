@@ -7,6 +7,7 @@ pipeline {
       steps { checkout scm }
     }
 
+    // Build فقط برای اینکه مطمئن شیم npm/lockfile درست هستند
     stage('Build') {
       agent { docker { image 'node:20-alpine' } }
       steps {
@@ -16,43 +17,46 @@ pipeline {
       }
     }
 
-    stage('Unit Tests') {
-      agent { docker { image 'node:20-alpine' } }
-      steps {
-        sh 'npm ci'
-        sh 'npm run test:unit'
-      }
-    }
+    // ✅ Parallel execution
+    stage('Tests (Parallel)') {
+      parallel {
+        stage('Unit Tests') {
+          agent { docker { image 'node:20-alpine' } }
+          steps {
+            sh 'node -v'
+            sh 'npm -v'
+            sh 'npm ci'
+            sh 'npm run test:unit'
+          }
+        }
 
-    stage('Integration Tests') {
-      agent {
-        docker {
-          image 'mcr.microsoft.com/playwright:v1.54.2-jammy'
-          reuseNode true
+        stage('Integration Tests (Playwright)') {
+          agent {
+            docker {
+              image 'mcr.microsoft.com/playwright:v1.54.2-jammy'
+              reuseNode true
+            }
+          }
+          steps {
+            sh 'node -v'
+            sh 'npm ci'
+            sh 'npx playwright test'
+          }
+          post {
+            always {
+              archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
+              archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
+            }
+          }
         }
       }
-      steps {
-        sh 'npm ci'
-        sh 'npx playwright test'
-      }
     }
 
+    // ❗ فعلاً غیر فعال تا تست‌ها دوبار اجرا نشن
     stage('E2E Playwright') {
-      agent {
-        docker {
-          image 'mcr.microsoft.com/playwright:v1.54.2-jammy'
-          reuseNode true
-        }
-      }
+      when { expression { false } }
       steps {
-        sh 'npm ci'
-        sh 'npx playwright test'
-      }
-      post {
-        always {
-          archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
-          archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
-        }
+        echo 'E2E disabled (Integration already runs Playwright tests)'
       }
     }
   }
