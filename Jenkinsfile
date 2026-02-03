@@ -27,6 +27,15 @@ pipeline {
         sh 'npm ci'
         sh 'npm run test:unit'
       }
+
+      stage('integration tests'){
+        agent{
+            docker{
+                image 'mrc.microsoft.com/playwright:v1.54.2-jammy'
+                reuseNode true
+            }
+        }
+      }
     }
 
     stage('E2E Playwright') {
